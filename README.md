@@ -8,4 +8,4 @@ Use `ng serve` ou apenas `ng s` para rodar. Navegue até o link local `http://lo
 
 ## Obervação
 
-Como o projeto ainda não possui persistência de dados, se você *atualizar a página* ou *reiniciar só o front-end ou só o back-end*, os dados podem se perder ou ficar fora de sincronia. Para evitar conflitos, sempre reinicie os dois (front e back) juntos quando fizer algo assim.
+Como o projeto ainda não possui persistência de dados, se você **atualizar a página** ou **reiniciar só o front-end ou só o back-end**, os dados podem se perder ou ficar fora de sincronia. Para evitar conflitos, sempre reinicie os dois (front e back) juntos quando fizer algo assim.
