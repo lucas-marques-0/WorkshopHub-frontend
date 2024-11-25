@@ -1,0 +1,244 @@
+<nav class="navbar">
+    <h1>Workshop<span>Hub</span></h1>
+    <p>powered by Fast Soluções</p>
+</nav>
+
+<div class="content">
+    <div class="top-menu">
+        <button (click)="openAddWorkshopModal()">Adicionar Workshop</button>
+        <button (click)="openAddAtaModal()">Criar ata para Workshop</button>
+        <button (click)="openAddEmployeeModal()">Adicionar Colaborador</button>
+        <button (click)="openSeeEmployeesModal()">Ver Colaboradores</button>
+        <button (click)="openSeeParticipationsModal()">Ver Participações</button>
+    </div>
+
+    <div class="bottom-menu">
+        <div class="search-options">
+            <div class="search-inputs">
+                <div class="input-form">
+                    <label for="employee">Colaborador</label>
+                    <input type="text" name="employee" id="employee" [(ngModel)]="employeeSearch">
+                </div>
+
+                <div class="input-form">
+                    <label for="workshopName">Workshop</label>
+                    <input type="text" name="workshopName" id="workshopName" [(ngModel)]="workshopSearch">
+                </div>
+
+                <div class="input-form">
+                    <label for="workshopDate">Data de realização</label>
+                    <input type="date" name="workshopDate" id="workshopDate" [(ngModel)]="dateSearch">
+                </div>
+            </div>
+            <button (click)="filterAtas()">Filtrar Atas</button>
+            <button (click)="removeFilterAtas()">Remover filtros</button>
+        </div>
+    </div>
+
+    @if ((ataList && ataList.length > 0) || (filteredAtaList && filteredAtaList.length > 0)) {
+    <div class="atas-grid">
+        @for (ata of (filteredAtaList.length > 0 ? filteredAtaList : ataList); track $index) {
+        <div class="ata-card">
+            <h2>Ata do evento {{ata.workshop.nome}}</h2>
+            <span class="bold-info">Data:</span>
+            <p>{{formatDate(ata.workshop.dataRealizacao)}}</p>
+            <span class="bold-info">Sobre:</span>
+            <p>{{ata.workshop.descricao}}</p>
+            <span class="bold-info">Colaboradores Abaixo</span>
+            <div class="ata-employees">
+                <ul>
+                    @for (colaboradores of ata.colaboradores; track $index) {
+                    <li>{{colaboradores.nome}}</li>
+                    }
+                </ul>
+            </div>
+            <div class="ata-buttons">
+                <button (click)="handleAddEmployeeToAta(ata)">Adicionar Colaborador</button>
+                <button (click)="handleRemoveEmployeeToAta(ata)">remover Colaborador</button>
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="home-message">
+        <p>Sem Atas cadastradas.</p>
+    </div>
+    }
+</div>
+
+<!-- Modais (componentizar no futuro) -->
+
+@if (addingWorkshop) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Adicione as informações do workshop!</h3>
+
+        <div class="input-form">
+            <label for="name">Nome</label>
+            <input type="text" name="name" id="name" [(ngModel)]="workshopName">
+        </div>
+
+        <div class="input-form">
+            <label for="date">Data de realização</label>
+            <input type="date" name="date" id="date" [(ngModel)]="workshopDate">
+        </div>
+
+        <div class="input-form">
+            <label for="description">Descrição</label>
+            <textarea name="description" id="description" [(ngModel)]="workshopDescription"></textarea>
+        </div>
+
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+            <button (click)="confirmWorkshop()">Confirmar</button>
+        </div>
+    </div>
+</div>
+}
+
+@if (addingEmployee) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Adicione o nome do seu colaborador!</h3>
+
+        <label for="name">Nome</label>
+        <input type="text" name="name" id="name" [(ngModel)]="employeeName">
+
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+            <button (click)="confirmEmployee()">Confirmar</button>
+        </div>
+    </div>
+</div>
+}
+
+@if (addingAta) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Escolha um workshop para criar sua ata!</h3>
+        @if (workshopList && workshopList.length > 0) {
+        <div class="workshop-grid">
+            @for (workshop of workshopList; track $index) {
+            <div class="workshop-card">
+                <h4>{{workshop.nome}}</h4>
+                <p>Data: {{formatDate(workshop.dataRealizacao)}}</p>
+                <p>Sobre: {{workshop.descricao}}</p>
+                <button (click)="handleCreateAta(workshop)">Criar ata</button>
+            </div>
+            }
+        </div>
+        } @else {
+        <p>Sem workshops cadastrados.</p>
+        }
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+        </div>
+    </div>
+</div>
+}
+
+@if (showingEmployees) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Esses são seus colaboradores!</h3>
+        @if (employeesInfos && employeesInfos.length > 0) {
+        <div class="workshop-grid">
+            @for (employee of employeesInfos; track $index) {
+            <div class="workshop-card">
+                <h4>{{employee.colaborador.nome}}</h4>
+                @if (employee.workshops.length > 0) {
+                <p class="bold-info">Workshops participantes</p>
+                <ul>
+                    @for (workshop of employee.workshops; track $index) {
+                    <li>{{workshop.nome}}</li>
+                    }
+                </ul>
+                } @else {
+                <p>sem workshops cadastrados.</p>
+                }
+            </div>
+            }
+        </div>
+        } @else {
+        <p>Sem colaboradores cadastrados.</p>
+        }
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+        </div>
+    </div>
+</div>
+}
+
+@if (addingEmployeeToAta) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Adicione um de seus colaboradores nessa ata!</h3>
+        @if (ataEmployeesToAdd && ataEmployeesToAdd.length > 0) {
+        <div class="workshop-grid">
+            @for (employee of ataEmployeesToAdd; track $index) {
+            <div class="workshop-card-employee">
+                <h4>{{employee.nome}}</h4>
+                <button (click)="confirmAddEmployeeToAta(employee)">+</button>
+            </div>
+            }
+        </div>
+        } @else {
+        <p>Sem colaboradores cadastrados.</p>
+        }
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+        </div>
+    </div>
+</div>
+}
+
+@if (removingEmployeeToAta) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Remova um colaborador cadastrado nessa ata!</h3>
+        @if (ataEmployeesToRemove && ataEmployeesToRemove.length > 0) {
+        <div class="workshop-grid">
+            @for (employee of ataEmployeesToRemove; track $index) {
+            <div class="workshop-card-employee">
+                <h4>{{employee.nome}}</h4>
+                <button (click)="confirmRemoveEmployeeToAta(employee)">-</button>
+            </div>
+            }
+        </div>
+        } @else {
+        <p>Sem colaboradores para remover.</p>
+        }
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+        </div>
+    </div>
+</div>
+}
+
+@if (showingParticipations) {
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-title">Buscar workshops COM ATA e exibir seus participantes!</h3>
+        <div class="input-form">
+            <label for="workshopNameFilter">Nome</label>
+            <input type="text" name="workshopNameFilter" id="workshopNameFilter" [(ngModel)]="workshopNameFilter">
+        </div>
+        <div class="input-form">
+            <label for="workshopDateFilter">Data de realização</label>
+            <input type="date" name="workshopDateFilter" id="workshopDateFilter" [(ngModel)]="workshopDateFilter">
+        </div>
+        <div class="modal-buttons">
+            <button (click)="resetAll()">Voltar</button>
+            <button (click)="getWorkshopsParticipations()">Buscar</button>
+        </div>
+        @if (searchedAtaParticipations && searchedAtaParticipations.length > 0) {
+        <p class="bold-info">Participantes do workshop</p>
+        <ul>
+            @for (employee of searchedAtaParticipations; track $index) {
+            <li>{{employee.nome}}</li>
+            }
+        </ul>
+        }
+    </div>
+</div>
+}
